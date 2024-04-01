@@ -30,7 +30,7 @@ impl HidrawReportDescriptor {
     pub fn usages(&self) -> impl Iterator<Item = (u16, u16)> + '_ {
         UsageIterator {
             usage_page: 0,
-            cursor: Cursor::new(&self.0)
+            cursor: Cursor::new(&self.0),
         }
     }
 }
@@ -38,7 +38,7 @@ impl HidrawReportDescriptor {
 /// Iterates over the values in a HidrawReportDescriptor
 struct UsageIterator<'a> {
     usage_page: u16,
-    cursor: Cursor<&'a Vec<u8>>
+    cursor: Cursor<&'a Vec<u8>>,
 }
 
 impl<'a> Iterator for UsageIterator<'a> {
@@ -47,7 +47,7 @@ impl<'a> Iterator for UsageIterator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let (usage_page, page) = match next_hid_usage(&mut self.cursor, self.usage_page) {
             Some(n) => n,
-            None => return None
+            None => return None,
         };
 
         self.usage_page = usage_page;
@@ -70,7 +70,7 @@ fn next_hid_usage(cursor: &mut Cursor<&Vec<u8>>, mut usage_page: u16) -> Option<
 
         let (data_len, key_size) = match hid_item_size(key, cursor) {
             Some(v) => v,
-            None => return None
+            None => return None,
         };
 
         match key_cmd {
@@ -146,7 +146,7 @@ fn hid_item_size(key: u8, cursor: &mut Cursor<&Vec<u8>>) -> Option<(usize, usize
     match key & 0x03 {
         v @ 0..=2 => Some((v.into(), 1)),
         3 => Some((4, 1)),
-        _ => unreachable!() // & 0x03 means this can't happen
+        _ => unreachable!(), // & 0x03 means this can't happen
     }
 }
 

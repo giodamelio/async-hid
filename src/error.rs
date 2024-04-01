@@ -11,12 +11,12 @@ pub type HidResult<T> = Result<T, HidError>;
 pub enum ErrorSource {
     PlatformSpecific(BackendError),
     InvalidZeroSizeData,
-    Custom(Cow<'static, str>)
+    Custom(Cow<'static, str>),
 }
 
 pub struct HidError {
     location: &'static Location<'static>,
-    source: ErrorSource
+    source: ErrorSource,
 }
 
 impl HidError {
@@ -24,7 +24,7 @@ impl HidError {
     pub fn custom(msg: impl Into<Cow<'static, str>>) -> Self {
         Self {
             location: Location::caller(),
-            source: ErrorSource::Custom(msg.into())
+            source: ErrorSource::Custom(msg.into()),
         }
     }
 
@@ -32,7 +32,7 @@ impl HidError {
     pub fn zero_sized_data() -> Self {
         Self {
             location: Location::caller(),
-            source: ErrorSource::InvalidZeroSizeData
+            source: ErrorSource::InvalidZeroSizeData,
         }
     }
 }
@@ -56,7 +56,7 @@ impl<T: Into<ErrorSource>> From<T> for HidError {
     fn from(value: T) -> Self {
         Self {
             location: Location::caller(),
-            source: value.into()
+            source: value.into(),
         }
     }
 }

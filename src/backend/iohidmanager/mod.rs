@@ -54,7 +54,7 @@ fn get_device_infos(device: IOHIDDevice) -> HidResult<Vec<DeviceInfo>> {
         vendor_id,
         usage_id: primary_usage,
         usage_page: primary_usage_page,
-        private_data: BackendPrivateData {}
+        private_data: BackendPrivateData {},
     };
 
     let mut results = Vec::new();
@@ -73,7 +73,7 @@ fn get_device_infos(device: IOHIDDevice) -> HidResult<Vec<DeviceInfo>> {
                 usage_id,
                 usage_page,
                 ..info.clone()
-            })
+            }),
     );
     results.push(info.clone());
 
@@ -83,7 +83,7 @@ fn get_device_infos(device: IOHIDDevice) -> HidResult<Vec<DeviceInfo>> {
 struct InputReceiver {
     run_loop: Arc<RunLoop>,
     _callback: CallbackGuard,
-    read_channel: Receiver<Bytes>
+    read_channel: Receiver<Bytes>,
 }
 
 impl InputReceiver {
@@ -107,7 +107,7 @@ impl InputReceiver {
         Ok(Self {
             run_loop,
             _callback: callback,
-            read_channel: receiver
+            read_channel: receiver,
         })
     }
 
@@ -130,7 +130,7 @@ impl InputReceiver {
 pub struct BackendDevice {
     device: IOHIDDevice,
     open_options: IOOptionBits,
-    input_receiver: Option<InputReceiver>
+    input_receiver: Option<InputReceiver>,
 }
 
 impl Drop for BackendDevice {
@@ -158,7 +158,7 @@ pub async fn open(id: &BackendDeviceId, mode: AccessMode) -> HidResult<BackendDe
     Ok(BackendDevice {
         device,
         open_options,
-        input_receiver
+        input_receiver,
     })
 }
 

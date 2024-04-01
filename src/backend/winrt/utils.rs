@@ -33,12 +33,12 @@ impl<T> WinResultExt<T> for Result<T> {
     #[track_caller]
     fn on_null_result<F>(self, func: F) -> HidResult<T>
     where
-        F: FnOnce() -> HidError
+        F: FnOnce() -> HidError,
     {
         match self {
             Ok(value) => Ok(value),
             Err(Error::OK) => Err(func()),
-            Err(err) => Err(HidError::from(err))
+            Err(err) => Err(HidError::from(err)),
         }
     }
 }

@@ -44,7 +44,7 @@ fn open_device(path: PCWSTR) -> HidResult<Handle> {
             None,
             OPEN_EXISTING,
             FILE_FLAG_OVERLAPPED,
-            HANDLE::default()
+            HANDLE::default(),
         )
     }?;
     Ok(Handle::from_raw(handle))

@@ -10,7 +10,7 @@ use async_channel::{bounded, unbounded, Sender, TryRecvError};
 use async_lock::Mutex;
 use core_foundation::base::{kCFAllocatorDefault, TCFType};
 use core_foundation::runloop::{
-    CFRunLoop, CFRunLoopRunResult, CFRunLoopSource, CFRunLoopSourceContext, CFRunLoopSourceCreate, CFRunLoopSourceSignal, CFRunLoopWakeUp
+    CFRunLoop, CFRunLoopRunResult, CFRunLoopSource, CFRunLoopSourceContext, CFRunLoopSourceCreate, CFRunLoopSourceSignal, CFRunLoopWakeUp,
 };
 use core_foundation::string::CFString;
 
@@ -38,7 +38,7 @@ impl LoopSource {
 
 struct LoopSender<T> {
     source: LoopSource,
-    sender: Sender<T>
+    sender: Sender<T>,
 }
 
 impl<T> LoopSender<T> {
@@ -60,12 +60,12 @@ impl<T> LoopSender<T> {
 enum LoopCommand {
     Stop,
     Schedule(IOHIDDevice),
-    Unschedule(IOHIDDevice)
+    Unschedule(IOHIDDevice),
 }
 
 pub struct RunLoop {
     sender: LoopSender<LoopCommand>,
-    thread: Option<JoinHandle<()>>
+    thread: Option<JoinHandle<()>>,
 }
 
 impl RunLoop {
@@ -89,7 +89,7 @@ impl RunLoop {
                 hash: None,
                 schedule: None,
                 cancel: None,
-                perform: dummy
+                perform: dummy,
             };
 
             let source = unsafe {
@@ -101,7 +101,7 @@ impl RunLoop {
             let (ext_sender, receiver) = unbounded();
             let ext_sender = LoopSender {
                 source: LoopSource(source, CFRunLoop::get_current()),
-                sender: ext_sender
+                sender: ext_sender,
             };
             sender
                 .try_send(ext_sender)
@@ -120,13 +120,13 @@ impl RunLoop {
                                     break 'outer;
                                 }
                                 LoopCommand::Schedule(dev) => dev.schedule_with_runloop(&run_loop, &run_loop_mode),
-                                LoopCommand::Unschedule(dev) => dev.unschedule_from_runloop(&run_loop, &run_loop_mode)
+                                LoopCommand::Unschedule(dev) => dev.unschedule_from_runloop(&run_loop, &run_loop_mode),
                             },
                             Err(TryRecvError::Empty) => break,
-                            Err(TryRecvError::Closed) => break 'outer
+                            Err(TryRecvError::Closed) => break 'outer,
                         }
                     },
-                    _ => break
+                    _ => break,
                 }
             }
 
@@ -156,7 +156,7 @@ impl RunLoop {
         let current = lock.take().and_then(|weak| weak.upgrade());
         let current = match current {
             None => Arc::new(RunLoop::new().await?),
-            Some(current) => current
+            Some(current) => current,
         };
         *lock = Some(Arc::downgrade(&current));
         Ok(current)

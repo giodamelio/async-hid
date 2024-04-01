@@ -118,7 +118,7 @@ impl IOHIDDevice {
 
     pub fn register_input_report_callback<F>(&self, callback: F) -> HidResult<CallbackGuard>
     where
-        F: FnMut(&[u8]) + Send + 'static
+        F: FnMut(&[u8]) + Send + 'static,
     {
         let max_input_report_len = self.get_i32_property(kIOHIDMaxInputReportSizeKey)? as usize;
 
@@ -131,13 +131,13 @@ impl IOHIDDevice {
                 report_buffer.as_mut_ptr(),
                 report_buffer.len() as _,
                 hid_report_callback,
-                callback.get() as _
+                callback.get() as _,
             );
         }
         Ok(CallbackGuard {
             device: self.clone(),
             _report_buffer: report_buffer,
-            _callback: callback
+            _callback: callback,
         })
     }
 }
@@ -148,7 +148,7 @@ type InputReportCallback = Box<dyn FnMut(&[u8]) + Send>;
 pub struct CallbackGuard {
     device: IOHIDDevice,
     _report_buffer: Box<[u8]>,
-    _callback: Box<UnsafeCell<InputReportCallback>>
+    _callback: Box<UnsafeCell<InputReportCallback>>,
 }
 
 impl Drop for CallbackGuard {
@@ -163,7 +163,7 @@ impl Drop for CallbackGuard {
 
 unsafe extern "C" fn hid_report_callback(
     context: *mut c_void, _result: IOReturn, _sender: *mut c_void, _report_type: IOHIDReportType, _report_id: u32, report: *mut u8,
-    report_length: CFIndex
+    report_length: CFIndex,
 ) {
     let callback: &mut InputReportCallback = &mut *(context as *mut InputReportCallback);
     let data = from_raw_parts(report, report_length as usize);

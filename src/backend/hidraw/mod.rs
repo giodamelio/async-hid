@@ -2,7 +2,7 @@ mod descriptor;
 mod ioctl;
 mod utils;
 
-use std::fs::{OpenOptions, read_dir, read_to_string};
+use std::fs::{read_dir, read_to_string, OpenOptions};
 use std::os::fd::{AsRawFd, OwnedFd};
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
@@ -13,9 +13,9 @@ use nix::unistd::{read, write};
 
 use crate::backend::hidraw::descriptor::HidrawReportDescriptor;
 use crate::backend::hidraw::utils::{iter, TryIterExt};
-use crate::{ensure, DeviceInfo, ErrorSource, HidError, HidResult, SerialNumberExt, AccessMode};
+use crate::{ensure, AccessMode, DeviceInfo, ErrorSource, HidError, HidResult, SerialNumberExt};
 
-use crate::backend::hidraw::async_api::{AsyncFd, read_with, write_with};
+use crate::backend::hidraw::async_api::{read_with, write_with, AsyncFd};
 use crate::backend::hidraw::ioctl::hidraw_ioc_grdescsize;
 
 pub async fn enumerate() -> HidResult<impl Stream<Item = DeviceInfo> + Send + Unpin> {
@@ -60,7 +60,7 @@ fn get_device_info_raw(path: PathBuf) -> HidResult<Vec<DeviceInfo>> {
         vendor_id,
         usage_id: 0,
         usage_page: 0,
-        private_data: BackendPrivateData { serial_number }
+        private_data: BackendPrivateData { serial_number },
     };
 
     let results = HidrawReportDescriptor::from_syspath(&path)
@@ -111,17 +111,13 @@ fn parse_hid_vid_pid(s: &str) -> Option<(u16, u16, u16)> {
 
 impl SerialNumberExt for DeviceInfo {
     fn serial_number(&self) -> Option<&str> {
-        self.private_data
-            .serial_number
-            .as_ref()
-            .map(String::as_str)
+        self.private_data.serial_number.as_ref().map(String::as_str)
     }
 }
 
-
 #[derive(Debug)]
 pub struct BackendDevice {
-    fd: AsyncFd
+    fd: AsyncFd,
 }
 
 impl BackendDevice {
@@ -155,10 +151,9 @@ pub async fn open(id: &BackendDeviceId, mode: AccessMode) -> HidResult<BackendDe
     Ok(BackendDevice { fd: AsyncFd::new(fd)? })
 }
 
-
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct BackendPrivateData {
-    serial_number: Option<String>
+    serial_number: Option<String>,
 }
 pub type BackendDeviceId = PathBuf;
 pub type BackendError = std::io::Error;
@@ -174,8 +169,8 @@ compile_error!("Only tokio or async-io can be active at the same time");
 
 #[cfg(feature = "async-io")]
 mod async_api {
-    use std::os::fd::OwnedFd;
     use async_io::Async;
+    use std::os::fd::OwnedFd;
 
     pub type AsyncFd = Async<OwnedFd>;
 

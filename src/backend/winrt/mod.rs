@@ -30,8 +30,7 @@ pub async fn enumerate() -> HidResult<impl Stream<Item = DeviceInfo> + Unpin + S
     //    .filter_map(|info| ready(info.ok()))
     //    .collect()
     //    .await;
-    let devices = DeviceInformation::FindAllAsyncAqsFilter(DEVICE_SELECTOR)?
-        .await?;
+    let devices = DeviceInformation::FindAllAsyncAqsFilter(DEVICE_SELECTOR)?.await?;
     let devices = DeviceInformationSteam::from(devices)
         .then(|info| Box::pin(get_device_information(info)))
         .filter_map(|r| {
@@ -42,7 +41,6 @@ pub async fn enumerate() -> HidResult<impl Stream<Item = DeviceInfo> + Unpin + S
     //.await;
     Ok(devices)
 }
-
 
 //fn get_device_information_unpin(device: DeviceInformation) -> impl Future<Output = HidResult<DeviceInfo>> + Unpin {
 //
@@ -62,14 +60,14 @@ async fn get_device_information(device: DeviceInformation) -> HidResult<DeviceIn
         vendor_id: device.VendorId()?,
         usage_id: device.UsageId()?,
         usage_page: device.UsagePage()?,
-        private_data: BackendPrivateData::default()
+        private_data: BackendPrivateData::default(),
     })
 }
 
 #[derive(Debug, Clone)]
 struct InputReceiver {
     buffer: Receiver<HidInputReport>,
-    token: EventRegistrationToken
+    token: EventRegistrationToken,
 }
 
 impl InputReceiver {
@@ -105,7 +103,7 @@ impl InputReceiver {
 #[derive(Debug, Clone)]
 pub struct BackendDevice {
     device: HidDevice,
-    input: Option<InputReceiver>
+    input: Option<InputReceiver>,
 }
 
 impl Drop for BackendDevice {
@@ -124,7 +122,7 @@ pub async fn open(id: &BackendDeviceId, mode: AccessMode) -> HidResult<BackendDe
         .on_null_result(|| HidError::custom(format!("Failed to open {}", id)))?;
     let input = match mode.readable() {
         true => Some(InputReceiver::new(&device)?),
-        false => None
+        false => None,
     };
     Ok(BackendDevice { device, input })
 }
@@ -166,7 +164,7 @@ impl BackendDevice {
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct BackendPrivateData {
-    serial_number: OnceLock<Option<String>>
+    serial_number: OnceLock<Option<String>>,
 }
 
 pub type BackendDeviceId = HSTRING;
@@ -183,22 +181,19 @@ impl From<AccessMode> for FileAccessMode {
         match value {
             AccessMode::Read => FileAccessMode::Read,
             AccessMode::Write => FileAccessMode::ReadWrite,
-            AccessMode::ReadWrite => FileAccessMode::ReadWrite
+            AccessMode::ReadWrite => FileAccessMode::ReadWrite,
         }
     }
 }
 
 struct DeviceInformationSteam {
     devices: DeviceInformationCollection,
-    index: u32
+    index: u32,
 }
 
 impl From<DeviceInformationCollection> for DeviceInformationSteam {
     fn from(value: DeviceInformationCollection) -> Self {
-        Self {
-            devices: value,
-            index: 0,
-        }
+        Self { devices: value, index: 0 }
     }
 }
 
@@ -215,7 +210,8 @@ impl Stream for DeviceInformationSteam {
         let remaining = (self
             .devices
             .Size()
-            .expect("Failed to get the length of the collection") - self.index) as usize;
+            .expect("Failed to get the length of the collection")
+            - self.index) as usize;
         (remaining, Some(remaining))
     }
 }

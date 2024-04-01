@@ -29,7 +29,7 @@ pub struct DeviceInfo {
     /// The HID usage page
     pub usage_page: u16,
 
-    pub(crate) private_data: BackendPrivateData
+    pub(crate) private_data: BackendPrivateData,
 }
 
 impl DeviceInfo {
@@ -47,7 +47,7 @@ impl DeviceInfo {
         Ok(Device {
             inner: dev,
             info: self.clone(),
-            mode
+            mode,
         })
     }
 
@@ -67,7 +67,7 @@ pub trait SerialNumberExt {
 pub struct Device {
     inner: BackendDevice,
     info: DeviceInfo,
-    mode: AccessMode
+    mode: AccessMode,
 }
 
 impl Device {
@@ -117,7 +117,7 @@ pub enum AccessMode {
     Read,
     Write,
     #[default]
-    ReadWrite
+    ReadWrite,
 }
 
 impl AccessMode {
