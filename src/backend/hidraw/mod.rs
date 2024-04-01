@@ -16,7 +16,7 @@ use crate::backend::hidraw::utils::{iter, TryIterExt};
 use crate::{ensure, AccessMode, DeviceInfo, ErrorSource, HidError, HidResult, SerialNumberExt};
 
 use crate::backend::hidraw::async_api::{read_with, write_with, AsyncFd};
-use crate::backend::hidraw::ioctl::hidraw_ioc_grdescsize;
+use crate::backend::hidraw::ioctl::{hidraw_ioc_get_feature, hidraw_ioc_grdescsize, hidraw_ioc_set_feature};
 
 pub async fn enumerate() -> HidResult<impl Stream<Item = DeviceInfo> + Send + Unpin> {
     let devices = read_dir("/sys/class/hidraw/")?
@@ -133,6 +133,19 @@ impl BackendDevice {
             .await
             .map_err(HidError::from)
             .map(|i| debug_assert_eq!(i, data.len()))
+    }
+
+    pub async fn read_feature_report(&self, buf: &mut [u8]) -> HidResult<usize> {
+        unsafe { hidraw_ioc_get_feature(self.fd.as_raw_fd(), buf) }
+            .map_err(|e| HidError::custom(format!("ioctl(GFEATURE): error reading feature report: {}", e)))
+            .map(|i| i as usize)
+    }
+
+    pub async fn write_feature_report(&self, data: &mut [u8]) -> HidResult<()> {
+        ensure!(!data.is_empty(), HidError::zero_sized_data());
+        unsafe { hidraw_ioc_set_feature(self.fd.as_raw_fd(), data) }
+            .map_err(|e| HidError::custom(format!("ioctl(SFEATURE): error reading feature report: {}", e)))
+            .map(|i| debug_assert_eq!(i, data.len() as i32))
     }
 }
 
