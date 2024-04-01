@@ -7,7 +7,7 @@ This crate generally offers a simpler and more streamlined api while also suppor
 
 ## Example
 
-```rust
+```rust,ignore
 use async_hid::{AccessMode, DeviceInfo, HidResult};
 use simple_logger::SimpleLogger;
 use futures_lite::StreamExt;
